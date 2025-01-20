@@ -23,11 +23,14 @@ USER $APPLICATION_USER
 # These lines copy the packaged application into the Docker image and sets the working directory to where it was copied.
 COPY ./build/libs/validator-wrapper-jvm-${PROJECT_VERSION}.jar /app/validator-wrapper.jar
 WORKDIR /app
+RUN echo '{"resourceType": "Patient","meta" : {"profile" : ["http://hl7.org.au/fhir/core/StructureDefinition/au-core-patient"]}}' >> patient.json
 
 # Environment vars here
 ENV ENVIRONMENT=prod
 
 EXPOSE 3500
+
+RUN java -jar validator-wrapper.jar -version 4.0.1 -ig hl7.fhir.au.core#1.0.0-preview -verbose -tx https://tx.dev.hl7.org.au/fhir patient.json || true
 
 # The last line instructs Docker to run java with G10s GC,  assigns 79% of the system's available memory, and indicates the packaged application.
 CMD ["java", "-server", "-XX:+UnlockExperimentalVMOptions", "-XX:InitialRAMPercentage=79", "-XX:MinRAMPercentage=79", "-XX:MaxRAMPercentage=79", "-XX:+UseG1GC", "-XX:MaxGCPauseMillis=100", "-XX:+UseStringDeduplication", "-XX:+CrashOnOutOfMemoryError", "-jar", "validator-wrapper.jar", "-startServer"]
