@@ -1,7 +1,12 @@
 version: '3'
 services:
   validator:
-    image: markiantorno/validator-wrapper
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        PROJECT_VERSION: "1.0.62-SNAPSHOT"
     restart: always
     ports:
       - 3500:3500
+
